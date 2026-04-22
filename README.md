@@ -43,7 +43,7 @@ A comprehensive Node.js Stock Management System with MSSQL database, email alert
      DB_PASSWORD=root
      DB_NAME=stock_mgt
      EMAIL_USER=sales@laskontech.com
-     EMAIL_PASSWORD=6o/kQR1eF+Y
+     EMAIL_PASSWORD=
      ALERT_EMAIL=ali.toolifykit@gmail.com
      STOCK_ALERT_THRESHOLD=5
      ```

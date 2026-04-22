@@ -105,7 +105,7 @@ DB_PORT=3306
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USER=sales@laskontech.com
-EMAIL_PASSWORD=6o/kQR1eF+Y
+EMAIL_PASSWORD=
 EMAIL_FROM=sales@laskontech.com
 ALERT_EMAIL=ali.toolifykit@gmail.com
 

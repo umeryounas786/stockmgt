@@ -50,7 +50,7 @@ http://localhost:3000
 | DB_NAME | stock_mgt |
 | DB_PORT | 3306 |
 | EMAIL_USER | sales@laskontech.com |
-| EMAIL_PASSWORD | 6o/kQR1eF+Y |
+| EMAIL_PASSWORD |  |
 | ALERT_EMAIL | ali.toolifykit@gmail.com |
 | STOCK_ALERT_THRESHOLD | 5 |
 | JWT_SECRET | stock_mgt_secret_key_2026 |
