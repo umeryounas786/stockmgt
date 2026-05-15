@@ -1,19 +1,19 @@
 const { getPool } = require('../config/database');
 
-class Company {
+class Supplier {
   static async getAll() {
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
       const query = `
-        SELECT c.*, COALESCE(p.cnt, 0) AS product_count
-        FROM company c
+        SELECT s.*, COALESCE(p.cnt, 0) AS product_count
+        FROM suppliers s
         LEFT JOIN (
-          SELECT company_id, COUNT(*) AS cnt
+          SELECT supplier_id, COUNT(*) AS cnt
           FROM products
-          GROUP BY company_id
-        ) p ON p.company_id = c.company_id
-        ORDER BY c.company_name ASC
+          GROUP BY supplier_id
+        ) p ON p.supplier_id = s.supplier_id
+        ORDER BY s.supplier_name ASC
       `;
       const [rows] = await connection.execute(query);
       return rows;
@@ -26,36 +26,40 @@ class Company {
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
-      const [rows] = await connection.execute('SELECT * FROM company WHERE company_id = ?', [id]);
+      const [rows] = await connection.execute('SELECT * FROM suppliers WHERE supplier_id = ?', [id]);
       return rows[0] || null;
     } finally {
       connection.release();
     }
   }
 
-  static async create(companyCode, companyName) {
+  static async create({ code, name, contactPerson, contactEmail, contactPhone, address }) {
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
       const [result] = await connection.execute(
-        'INSERT INTO company (company_code, company_name) VALUES (?, ?)',
-        [companyCode, companyName]
+        `INSERT INTO suppliers (supplier_code, supplier_name, contact_person, contact_email, contact_phone, address)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [code, name, contactPerson, contactEmail, contactPhone, address]
       );
-      return { company_id: result.insertId, company_code: companyCode, company_name: companyName };
+      return { supplier_id: result.insertId };
     } finally {
       connection.release();
     }
   }
 
-  static async update(id, companyCode, companyName) {
+  static async update(id, { code, name, contactPerson, contactEmail, contactPhone, address }) {
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
       await connection.execute(
-        'UPDATE company SET company_code = ?, company_name = ?, updated_at = NOW() WHERE company_id = ?',
-        [companyCode, companyName, id]
+        `UPDATE suppliers
+         SET supplier_code = ?, supplier_name = ?, contact_person = ?,
+             contact_email = ?, contact_phone = ?, address = ?, updated_at = NOW()
+         WHERE supplier_id = ?`,
+        [code, name, contactPerson, contactEmail, contactPhone, address, id]
       );
-      return { success: true, message: 'Company updated' };
+      return { success: true };
     } finally {
       connection.release();
     }
@@ -65,8 +69,8 @@ class Company {
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
-      await connection.execute('DELETE FROM company WHERE company_id = ?', [id]);
-      return { success: true, message: 'Company deleted' };
+      await connection.execute('DELETE FROM suppliers WHERE supplier_id = ?', [id]);
+      return { success: true };
     } finally {
       connection.release();
     }
@@ -77,7 +81,7 @@ class Company {
     const connection = await pool.getConnection();
     try {
       const [rows] = await connection.execute(
-        'SELECT COUNT(*) AS cnt FROM products WHERE company_id = ?',
+        'SELECT COUNT(*) AS cnt FROM products WHERE supplier_id = ?',
         [id]
       );
       return rows[0] ? Number(rows[0].cnt) : 0;
@@ -87,4 +91,4 @@ class Company {
   }
 }
 
-module.exports = Company;
+module.exports = Supplier;

@@ -1,7 +1,8 @@
 const { getPool } = require('../config/database');
 
 class Product {
-  // Returns products with derived stock figures (total_sale, stock_in_hand, stock_in_boxes).
+  // Returns products with derived stock figures (total_purchase, total_sale,
+  // stock_in_hand, stock_in_boxes) from product_stock_summary.
   static async getAll() {
     const pool = await getPool();
     const connection = await pool.getConnection();
@@ -15,7 +16,6 @@ class Product {
     }
   }
 
-  // Summary row for a single product (includes derived stock figures).
   static async getById(id) {
     const pool = await getPool();
     const connection = await pool.getConnection();
@@ -30,23 +30,23 @@ class Product {
     }
   }
 
-  // Builds the next product code for a company: company_code prefix + an
-  // incrementing number (e.g. 'sam' -> 'sam1', 'sam2'). The number is one past
-  // the highest existing suffix so it survives deletions without reusing codes.
-  static async generateProductCode(companyId) {
+  // Next product code for a supplier: supplier_code prefix + an incrementing
+  // number (e.g. 'acme' -> 'acme1', 'acme2'). The number is one past the
+  // highest existing suffix so it survives deletions without reusing codes.
+  static async generateProductCode(supplierId) {
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
-      const [companyRows] = await connection.execute(
-        'SELECT company_code FROM company WHERE company_id = ?',
-        [companyId]
+      const [supplierRows] = await connection.execute(
+        'SELECT supplier_code FROM suppliers WHERE supplier_id = ?',
+        [supplierId]
       );
-      if (!companyRows[0]) return null;
-      const prefix = companyRows[0].company_code;
+      if (!supplierRows[0]) return null;
+      const prefix = supplierRows[0].supplier_code;
 
       const [productRows] = await connection.execute(
-        'SELECT product_code FROM products WHERE company_id = ?',
-        [companyId]
+        'SELECT product_code FROM products WHERE supplier_id = ?',
+        [supplierId]
       );
 
       let maxNum = 0;
@@ -63,14 +63,14 @@ class Product {
     }
   }
 
-  static async create(companyId, productCode, description, packetSize, stockPurchase) {
+  static async create(supplierId, productCode, description, packetSize) {
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
       const [result] = await connection.execute(
-        `INSERT INTO products (company_id, product_code, product_description, product_packet_size, product_stock_purchase)
-         VALUES (?, ?, ?, ?, ?)`,
-        [companyId, productCode, description, packetSize, stockPurchase]
+        `INSERT INTO products (supplier_id, product_code, product_description, product_packet_size)
+         VALUES (?, ?, ?, ?)`,
+        [supplierId, productCode, description, packetSize]
       );
       return { product_id: result.insertId, product_code: productCode };
     } finally {
@@ -78,18 +78,17 @@ class Product {
     }
   }
 
-  static async update(id, companyId, productCode, description, packetSize, stockPurchase) {
+  static async update(id, description, packetSize) {
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
       await connection.execute(
         `UPDATE products
-         SET company_id = ?, product_code = ?, product_description = ?,
-             product_packet_size = ?, product_stock_purchase = ?, updated_at = NOW()
+         SET product_description = ?, product_packet_size = ?, updated_at = NOW()
          WHERE product_id = ?`,
-        [companyId, productCode, description, packetSize, stockPurchase, id]
+        [description, packetSize, id]
       );
-      return { success: true, message: 'Product updated' };
+      return { success: true };
     } finally {
       connection.release();
     }
@@ -100,7 +99,7 @@ class Product {
     const connection = await pool.getConnection();
     try {
       await connection.execute('DELETE FROM products WHERE product_id = ?', [id]);
-      return { success: true, message: 'Product deleted' };
+      return { success: true };
     } finally {
       connection.release();
     }

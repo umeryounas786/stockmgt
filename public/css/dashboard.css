@@ -303,6 +303,22 @@ body {
     min-width: 220px;
 }
 
+/* Reports page */
+.chart-container {
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto 20px;
+}
+
+.chart-container canvas {
+    max-height: 420px;
+}
+
+.report-description {
+    color: #666;
+    margin-bottom: 20px;
+}
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;

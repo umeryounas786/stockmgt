@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Purchases - Stock Management</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📦 Stock Manager</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/suppliers" class="nav-link">Suppliers</a>
+                <a href="/customers" class="nav-link">Customers</a>
+                <a href="/stock-purchases" class="nav-link active">Stock Purchases</a>
+                <a href="/sales" class="nav-link">Sales</a>
+                <a href="/reports" class="nav-link">Reports</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <h1>Stock Purchases</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="addPurchaseBtn">+ Record Purchase</button>
+                </div>
+            </header>
+
+            <section class="content-section">
+                <h2>All Stock Purchases</h2>
+                <div class="table-container">
+                    <table class="stock-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>Product Code</th>
+                                <th>Description</th>
+                                <th>Supplier</th>
+                                <th>Pack Size</th>
+                                <th>Quantity</th>
+                                <th>Unit Value</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="purchaseTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="purchaseModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="purchaseModalTitle">Record Stock Purchase</h2>
+            <form id="purchaseForm">
+                <!-- Fields that only apply when creating a brand-new product. -->
+                <div id="newProductFields">
+                    <div class="form-group">
+                        <label for="supplierId">Supplier *</label>
+                        <select id="supplierId" name="supplierId" required>
+                            <option value="">-- Select Supplier --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productCode">Product Code</label>
+                        <input type="text" id="productCode" placeholder="Auto-generated after selecting supplier" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Product Description</label>
+                        <input type="text" id="description" name="description" placeholder="e.g. toys">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packetSize">Pack Size *</label>
+                        <input type="number" id="packetSize" name="packetSize" min="1" value="1" required>
+                    </div>
+                </div>
+
+                <!-- Read-only product summary when editing. -->
+                <div id="editProductSummary" style="display:none;">
+                    <div class="form-group">
+                        <label>Product</label>
+                        <input type="text" id="editProductInfo" readonly>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quantity">Quantity *</label>
+                        <input type="number" id="quantity" name="quantity" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="unitValue">Unit Value *</label>
+                        <input type="number" id="unitValue" name="unitValue" min="0" step="0.01" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="currency">Currency *</label>
+                        <select id="currency" name="currency" required>
+                            <option value="USD">$ &mdash; USD</option>
+                            <option value="PKR">₨ &mdash; PKR</option>
+                            <option value="GBP">£ &mdash; GBP</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="purchaseDate">Purchase Date *</label>
+                        <input type="date" id="purchaseDate" name="purchaseDate" required>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Purchase</button>
+                    <button type="button" class="btn btn-secondary" id="purchaseCancelBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/stock-purchases.js"></script>
+</body>
+</html>

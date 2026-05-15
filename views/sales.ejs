@@ -8,20 +8,21 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h2>📦 Stock Manager</h2>
             </div>
             <nav class="sidebar-nav">
-                <a href="/dashboard" class="nav-link">Products</a>
-                <a href="/companies" class="nav-link">Companies</a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/suppliers" class="nav-link">Suppliers</a>
+                <a href="/customers" class="nav-link">Customers</a>
+                <a href="/stock-purchases" class="nav-link">Stock Purchases</a>
                 <a href="/sales" class="nav-link active">Sales</a>
+                <a href="/reports" class="nav-link">Reports</a>
                 <a href="/logout" class="nav-link">Logout</a>
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header class="header">
                 <h1>Sales</h1>
@@ -34,15 +35,21 @@
                 <h2>All Sales</h2>
                 <div class="filter-bar">
                     <div class="form-group">
-                        <label for="filterCompany">Filter by Company</label>
-                        <select id="filterCompany">
-                            <option value="">All Companies</option>
+                        <label for="filterSupplier">Filter by Supplier</label>
+                        <select id="filterSupplier">
+                            <option value="">All Suppliers</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="filterProduct">Filter by Product</label>
                         <select id="filterProduct">
                             <option value="">All Products</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="filterCustomer">Filter by Customer</label>
+                        <select id="filterCustomer">
+                            <option value="">All Customers</option>
                         </select>
                     </div>
                 </div>
@@ -53,31 +60,29 @@
                                 <th>ID</th>
                                 <th>Product Code</th>
                                 <th>Description</th>
-                                <th>Sold To</th>
+                                <th>Supplier</th>
+                                <th>Customer</th>
                                 <th>Sale Date</th>
                                 <th>Quantity</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="saleTableBody">
-                            <!-- Populated by JavaScript -->
-                        </tbody>
+                        <tbody id="saleTableBody"></tbody>
                     </table>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- Add/Edit Sale Modal -->
     <div id="saleModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2 id="saleModalTitle">Record Sale</h2>
             <form id="saleForm">
                 <div class="form-group">
-                    <label for="saleCompany">Company (optional &mdash; filters products)</label>
-                    <select id="saleCompany">
-                        <option value="">All Companies</option>
+                    <label for="saleSupplier">Supplier (filters products)</label>
+                    <select id="saleSupplier">
+                        <option value="">All Suppliers</option>
                     </select>
                 </div>
 
@@ -89,8 +94,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="saleTo">Sold To</label>
-                    <input type="text" id="saleTo" name="saleTo" placeholder="Customer (optional)">
+                    <label for="customerId">Customer</label>
+                    <select id="customerId" name="customerId">
+                        <option value="">-- (optional) --</option>
+                    </select>
                 </div>
 
                 <div class="form-row">

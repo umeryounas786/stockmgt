@@ -14,9 +14,12 @@
                 <h2>📦 Stock Manager</h2>
             </div>
             <nav class="sidebar-nav">
-                <a href="/dashboard" class="nav-link active">Products</a>
-                <a href="/companies" class="nav-link">Companies</a>
+                <a href="/dashboard" class="nav-link active">Dashboard</a>
+                <a href="/suppliers" class="nav-link">Suppliers</a>
+                <a href="/customers" class="nav-link">Customers</a>
+                <a href="/stock-purchases" class="nav-link">Stock Purchases</a>
                 <a href="/sales" class="nav-link">Sales</a>
+                <a href="/reports" class="nav-link">Reports</a>
                 <a href="/logout" class="nav-link">Logout</a>
             </nav>
         </aside>
@@ -24,10 +27,7 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="header">
-                <h1>Products &amp; Stock</h1>
-                <div class="header-actions">
-                    <button class="btn btn-primary" id="addProductBtn">+ Add Product</button>
-                </div>
+                <h1>Dashboard</h1>
             </header>
 
             <section class="content-section">
@@ -38,7 +38,7 @@
                             <tr>
                                 <th>Product Code</th>
                                 <th>Description</th>
-                                <th>Company</th>
+                                <th>Supplier</th>
                                 <th>Packet Size</th>
                                 <th>Purchased</th>
                                 <th>Total Sold</th>
@@ -47,32 +47,27 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="productTableBody">
-                            <!-- Populated by JavaScript -->
-                        </tbody>
+                        <tbody id="productTableBody"></tbody>
                     </table>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- Add/Edit Product Modal -->
+    <!-- Edit Product Modal -->
     <div id="productModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2 id="productModalTitle">Add Product</h2>
+            <h2 id="productModalTitle">Edit Product</h2>
             <form id="productForm">
                 <div class="form-group">
-                    <label for="companyId">Company *</label>
-                    <select id="companyId" name="companyId" required>
-                        <option value="">-- Select Company --</option>
-                    </select>
+                    <label for="productCode">Product Code</label>
+                    <input type="text" id="productCode" readonly>
                 </div>
 
                 <div class="form-group">
-                    <label for="productCode">Product Code</label>
-                    <input type="text" id="productCode" name="productCode"
-                           placeholder="Auto-generated from company" readonly>
+                    <label for="supplierName">Supplier</label>
+                    <input type="text" id="supplierName" readonly>
                 </div>
 
                 <div class="form-group">
@@ -80,15 +75,9 @@
                     <input type="text" id="description" name="description" placeholder="e.g. toys">
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="packetSize">Packet Size *</label>
-                        <input type="number" id="packetSize" name="packetSize" min="1" value="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="stockPurchase">Stock Purchased *</label>
-                        <input type="number" id="stockPurchase" name="stockPurchase" min="0" value="0" required>
-                    </div>
+                <div class="form-group">
+                    <label for="packetSize">Packet Size *</label>
+                    <input type="number" id="packetSize" name="packetSize" min="1" value="1" required>
                 </div>
 
                 <div class="form-actions">

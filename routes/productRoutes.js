@@ -1,17 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const productController = require('../controllers/productController');
+const controller = require('../controllers/productController');
 const { authenticateToken, checkAuth } = require('../middleware/auth');
 
 // Web route
-router.get('/dashboard', checkAuth, productController.getProductsPage);
+router.get('/dashboard', checkAuth, controller.getProductsPage);
 
 // API routes
-router.get('/api/products', authenticateToken, productController.getAllProducts);
-router.get('/api/products/next-code/:companyId', authenticateToken, productController.getNextProductCode);
-router.get('/api/products/:id', authenticateToken, productController.getProductById);
-router.post('/api/products', authenticateToken, productController.createProduct);
-router.put('/api/products/:id', authenticateToken, productController.updateProduct);
-router.delete('/api/products/:id', authenticateToken, productController.deleteProduct);
+router.get('/api/products', authenticateToken, controller.getAll);
+router.get('/api/products/next-code/:supplierId', authenticateToken, controller.getNextProductCode);
+router.get('/api/products/:id', authenticateToken, controller.getById);
+router.put('/api/products/:id', authenticateToken, controller.update);
+router.delete('/api/products/:id', authenticateToken, controller.delete);
 
 module.exports = router;

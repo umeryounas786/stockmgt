@@ -5,9 +5,7 @@ function getToken() {
 function getAuthHeaders() {
     const headers = { 'Content-Type': 'application/json' };
     const token = getToken();
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     return headers;
 }
 
@@ -28,65 +26,82 @@ function formatDate(value) {
 
 let allSales = [];
 let allProducts = [];
+let allSuppliers = [];
+let allCustomers = [];
+
+async function fetchJson(url) {
+    const response = await fetch(url, { headers: getAuthHeaders() });
+    if (response.status === 401) { window.location.href = '/login'; throw new Error('Unauthorized'); }
+    if (!response.ok) throw new Error(`Failed to load ${url}`);
+    return response.json();
+}
 
 function productLabel(product) {
     return `${product.product_code} - ${product.product_description || ''} (in hand: ${product.stock_in_hand})`;
 }
 
-async function loadProductOptions() {
+async function loadSuppliers() {
     try {
-        const response = await fetch('/api/products', { headers: getAuthHeaders() });
+        allSuppliers = await fetchJson('/api/suppliers');
+        ['filterSupplier', 'saleSupplier'].forEach(selectId => {
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">All Suppliers</option>';
+            allSuppliers.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.supplier_id;
+                opt.textContent = `${s.supplier_name} (${s.supplier_code})`;
+                select.appendChild(opt);
+            });
+        });
+    } catch (error) {
+        console.error('Error loading suppliers:', error);
+        alert('Error loading suppliers: ' + error.message);
+    }
+}
 
-        if (response.status === 401) {
-            window.location.href = '/login';
-            return;
-        }
-        if (!response.ok) throw new Error('Failed to load products');
+async function loadCustomers() {
+    try {
+        allCustomers = await fetchJson('/api/customers');
+        const filter = document.getElementById('filterCustomer');
+        filter.innerHTML = '<option value="">All Customers</option>';
+        const modalSelect = document.getElementById('customerId');
+        modalSelect.innerHTML = '<option value="">-- (optional) --</option>';
+        allCustomers.forEach(c => {
+            const filterOpt = document.createElement('option');
+            filterOpt.value = c.customer_id;
+            filterOpt.textContent = c.customer_name;
+            filter.appendChild(filterOpt);
 
-        allProducts = await response.json();
+            const modalOpt = document.createElement('option');
+            modalOpt.value = c.customer_id;
+            modalOpt.textContent = c.customer_name;
+            modalSelect.appendChild(modalOpt);
+        });
+    } catch (error) {
+        console.error('Error loading customers:', error);
+        alert('Error loading customers: ' + error.message);
+    }
+}
 
-        populateSaleProductSelect(document.getElementById('saleCompany').value);
-        populateProductFilter(document.getElementById('filterCompany').value);
+async function loadProducts() {
+    try {
+        allProducts = await fetchJson('/api/products');
+        populateSaleProductSelect(document.getElementById('saleSupplier').value);
+        populateProductFilter(document.getElementById('filterSupplier').value);
     } catch (error) {
         console.error('Error loading products:', error);
         alert('Error loading products: ' + error.message);
     }
 }
 
-async function loadCompanies() {
-    try {
-        const response = await fetch('/api/companies', { headers: getAuthHeaders() });
-
-        if (response.status === 401) {
-            window.location.href = '/login';
-            return;
-        }
-        if (!response.ok) throw new Error('Failed to load companies');
-
-        const companies = await response.json();
-        // Same company list feeds the page filter and the Record Sale modal.
-        ['filterCompany', 'saleCompany'].forEach(selectId => {
-            const select = document.getElementById(selectId);
-            select.innerHTML = '<option value="">All Companies</option>';
-            companies.forEach(company => {
-                const opt = document.createElement('option');
-                opt.value = company.company_id;
-                opt.textContent = `${company.company_name} (${company.company_code})`;
-                select.appendChild(opt);
-            });
-        });
-    } catch (error) {
-        console.error('Error loading companies:', error);
-        alert('Error loading companies: ' + error.message);
-    }
+function productsForSupplier(supplierId) {
+    if (!supplierId) return allProducts;
+    return allProducts.filter(p => String(p.supplier_id) === String(supplierId));
 }
 
-// Rebuilds the page-level product filter, optionally narrowed to a company.
-function populateProductFilter(companyId) {
+function populateProductFilter(supplierId) {
     const select = document.getElementById('filterProduct');
-    const products = companyId
-        ? allProducts.filter(p => String(p.company_id) === String(companyId))
-        : allProducts;
+    const products = productsForSupplier(supplierId);
 
     select.innerHTML = '<option value="">All Products</option>';
     products.forEach(product => {
@@ -97,14 +112,10 @@ function populateProductFilter(companyId) {
     });
 }
 
-// Rebuilds the Record Sale modal's product select, optionally narrowed to a
-// company. Keeps the current product selected if it is still in the list.
-function populateSaleProductSelect(companyId) {
+function populateSaleProductSelect(supplierId) {
     const select = document.getElementById('productId');
     const previous = select.value;
-    const products = companyId
-        ? allProducts.filter(p => String(p.company_id) === String(companyId))
-        : allProducts;
+    const products = productsForSupplier(supplierId);
 
     select.innerHTML = '<option value="">-- Select Product --</option>';
     products.forEach(product => {
@@ -120,30 +131,26 @@ function populateSaleProductSelect(companyId) {
 }
 
 function applyFilters() {
-    const companyId = document.getElementById('filterCompany').value;
+    const supplierId = document.getElementById('filterSupplier').value;
     const productId = document.getElementById('filterProduct').value;
+    const customerId = document.getElementById('filterCustomer').value;
 
     let filtered = allSales;
-    if (companyId) {
-        filtered = filtered.filter(s => String(s.company_id) === String(companyId));
+    if (supplierId) {
+        filtered = filtered.filter(s => String(s.supplier_id) === String(supplierId));
     }
     if (productId) {
         filtered = filtered.filter(s => String(s.product_id) === String(productId));
+    }
+    if (customerId) {
+        filtered = filtered.filter(s => String(s.customer_id) === String(customerId));
     }
     displaySales(filtered);
 }
 
 async function loadSales() {
     try {
-        const response = await fetch('/api/sales', { headers: getAuthHeaders() });
-
-        if (response.status === 401) {
-            window.location.href = '/login';
-            return;
-        }
-        if (!response.ok) throw new Error('Failed to load sales');
-
-        allSales = await response.json();
+        allSales = await fetchJson('/api/sales');
         applyFilters();
     } catch (error) {
         console.error('Error loading sales:', error);
@@ -156,7 +163,7 @@ function displaySales(sales) {
     tableBody.innerHTML = '';
 
     if (!sales || sales.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No sales found</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">No sales found</td></tr>';
         return;
     }
 
@@ -166,9 +173,10 @@ function displaySales(sales) {
             <td>${sale.sale_id}</td>
             <td><strong>${escapeHtml(sale.product_code)}</strong></td>
             <td>${escapeHtml(sale.product_description) || '-'}</td>
-            <td>${escapeHtml(sale.product_sale_to) || '-'}</td>
-            <td>${formatDate(sale.product_sale_date)}</td>
-            <td>${sale.product_sale_qty}</td>
+            <td>${escapeHtml(sale.supplier_name) || '-'}</td>
+            <td>${escapeHtml(sale.customer_name) || '-'}</td>
+            <td>${formatDate(sale.sale_date)}</td>
+            <td>${sale.sale_qty}</td>
             <td>
                 <div class="action-buttons">
                     <button class="btn btn-edit" onclick="editSale(${sale.sale_id})">Edit</button>
@@ -184,27 +192,25 @@ function openAddSaleModal() {
     document.getElementById('saleForm').reset();
     document.getElementById('saleModalTitle').textContent = 'Record Sale';
     document.getElementById('saleForm').dataset.saleId = '';
-    document.getElementById('saleCompany').value = '';
+    document.getElementById('saleSupplier').value = '';
     populateSaleProductSelect('');
+    document.getElementById('saleDate').value = new Date().toISOString().slice(0, 10);
     document.getElementById('saleModal').classList.add('show');
 }
 
 async function editSale(saleId) {
     try {
-        const response = await fetch(`/api/sales/${saleId}`, { headers: getAuthHeaders() });
-        if (!response.ok) throw new Error('Failed to load sale');
+        const sale = await fetchJson(`/api/sales/${saleId}`);
 
-        const sale = await response.json();
-
-        // Preset the company filter to the sold product's company, if known.
+        // Preset the supplier filter to the product's supplier, if known.
         const product = allProducts.find(p => String(p.product_id) === String(sale.product_id));
-        document.getElementById('saleCompany').value = product ? product.company_id : '';
-        populateSaleProductSelect(document.getElementById('saleCompany').value);
+        document.getElementById('saleSupplier').value = product ? product.supplier_id : '';
+        populateSaleProductSelect(document.getElementById('saleSupplier').value);
 
         document.getElementById('productId').value = sale.product_id || '';
-        document.getElementById('saleTo').value = sale.product_sale_to || '';
-        document.getElementById('saleDate').value = formatDate(sale.product_sale_date);
-        document.getElementById('saleQty').value = sale.product_sale_qty;
+        document.getElementById('customerId').value = sale.customer_id || '';
+        document.getElementById('saleDate').value = formatDate(sale.sale_date);
+        document.getElementById('saleQty').value = sale.sale_qty;
 
         document.getElementById('saleModalTitle').textContent = 'Edit Sale';
         document.getElementById('saleForm').dataset.saleId = saleId;
@@ -232,7 +238,7 @@ async function deleteSale(saleId) {
 
         alert('Sale deleted successfully');
         loadSales();
-        loadProductOptions();
+        loadProducts();
     } catch (error) {
         console.error('Error deleting sale:', error);
         alert('Error deleting sale: ' + error.message);
@@ -244,14 +250,11 @@ document.getElementById('saleForm').addEventListener('submit', async (e) => {
 
     const saleId = document.getElementById('saleForm').dataset.saleId;
     const productIdValue = document.getElementById('productId').value;
-    if (!productIdValue) {
-        alert('Please select a product');
-        return;
-    }
+    if (!productIdValue) { alert('Please select a product'); return; }
 
     const data = {
         productId: parseInt(productIdValue, 10),
-        saleTo: document.getElementById('saleTo').value.trim(),
+        customerId: document.getElementById('customerId').value || null,
         saleDate: document.getElementById('saleDate').value,
         saleQty: parseInt(document.getElementById('saleQty').value, 10)
     };
@@ -275,7 +278,7 @@ document.getElementById('saleForm').addEventListener('submit', async (e) => {
         alert(saleId ? 'Sale updated successfully' : 'Sale recorded successfully');
         document.getElementById('saleModal').classList.remove('show');
         loadSales();
-        loadProductOptions();
+        loadProducts();
     } catch (error) {
         console.error('Error saving sale:', error);
         alert('Error saving sale: ' + error.message);
@@ -292,23 +295,22 @@ document.querySelector('.close').addEventListener('click', () => {
 
 window.addEventListener('click', (e) => {
     const modal = document.getElementById('saleModal');
-    if (e.target === modal) {
-        modal.classList.remove('show');
-    }
+    if (e.target === modal) modal.classList.remove('show');
 });
 
-document.getElementById('filterCompany').addEventListener('change', (e) => {
+document.getElementById('filterSupplier').addEventListener('change', (e) => {
     populateProductFilter(e.target.value);
     applyFilters();
 });
 document.getElementById('filterProduct').addEventListener('change', applyFilters);
+document.getElementById('filterCustomer').addEventListener('change', applyFilters);
 
-document.getElementById('saleCompany').addEventListener('change', (e) => {
+document.getElementById('saleSupplier').addEventListener('change', (e) => {
     populateSaleProductSelect(e.target.value);
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadCompanies();
-    loadProductOptions();
-    loadSales();
+document.addEventListener('DOMContentLoaded', async () => {
+    await Promise.all([loadSuppliers(), loadCustomers()]);
+    await loadProducts();
+    await loadSales();
 });

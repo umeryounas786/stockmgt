@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Stock Management</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📦 Stock Manager</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/suppliers" class="nav-link">Suppliers</a>
+                <a href="/customers" class="nav-link">Customers</a>
+                <a href="/stock-purchases" class="nav-link">Stock Purchases</a>
+                <a href="/sales" class="nav-link">Sales</a>
+                <a href="/reports" class="nav-link active">Reports</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <h1>Reports</h1>
+            </header>
+
+            <section class="content-section">
+                <div class="filter-bar">
+                    <div class="form-group">
+                        <label for="reportType">Choose Report</label>
+                        <select id="reportType">
+                            <option value="stock-in-hand">Stock in hand by product</option>
+                            <option value="purchase-vs-sold">Purchase vs Sold per product</option>
+                            <option value="sales-by-product">Sales by product</option>
+                            <option value="sales-by-supplier">Sales by supplier</option>
+                            <option value="sales-by-customer">Sales by customer</option>
+                            <option value="sales-over-time">Sales over time</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h2 id="reportTitle">&nbsp;</h2>
+                <p id="reportDescription" class="report-description"></p>
+
+                <div class="chart-container">
+                    <canvas id="reportChart"></canvas>
+                </div>
+
+                <h3 style="margin-top:30px;">Underlying data</h3>
+                <div class="table-container">
+                    <table class="stock-table">
+                        <thead id="reportTableHead"></thead>
+                        <tbody id="reportTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/reports.js"></script>
+</body>
+</html>
