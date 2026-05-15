@@ -6,8 +6,9 @@ require('dotenv').config();
 
 const { initializePool } = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
-const stockRoutes = require('./routes/stockRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
+const companyRoutes = require('./routes/companyRoutes');
+const productRoutes = require('./routes/productRoutes');
+const saleRoutes = require('./routes/saleRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,8 +26,9 @@ app.set('views', './views');
 
 // Routes
 app.use('/', authRoutes);
-app.use('/', stockRoutes);
-app.use('/', categoryRoutes);
+app.use('/', companyRoutes);
+app.use('/', productRoutes);
+app.use('/', saleRoutes);
 
 // Home route
 app.get('/', (req, res) => {

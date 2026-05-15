@@ -14,42 +14,40 @@
                 <h2>📦 Stock Manager</h2>
             </div>
             <nav class="sidebar-nav">
-                <a href="/dashboard" class="nav-link active" data-page="stock">Dashboard</a>
-                <a href="/categories" class="nav-link" data-page="categories">Categories</a>
-                <a href="/stock/low-stock" class="nav-link" data-page="low-stock">Low Stock</a>
+                <a href="/dashboard" class="nav-link active">Products</a>
+                <a href="/companies" class="nav-link">Companies</a>
+                <a href="/sales" class="nav-link">Sales</a>
                 <a href="/logout" class="nav-link">Logout</a>
             </nav>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
             <header class="header">
-                <h1>Stock Management Dashboard</h1>
+                <h1>Products &amp; Stock</h1>
                 <div class="header-actions">
-                    <button class="btn btn-primary" id="addStockBtn">+ Add Stock</button>
+                    <button class="btn btn-primary" id="addProductBtn">+ Add Product</button>
                 </div>
             </header>
 
-            <!-- Stock Items Table -->
             <section class="content-section">
-                <h2>Stock Items</h2>
+                <h2>Stock In Hand</h2>
                 <div class="table-container">
-                    <table id="stockTable" class="stock-table">
+                    <table class="stock-table">
                         <thead>
                             <tr>
-                                <th>Item ID</th>
-                                <th>Item Name</th>
-                                <th>SKU</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Category</th>
-                                <th>Supplier</th>
-                                <th>Status</th>
+                                <th>Product Code</th>
+                                <th>Description</th>
+                                <th>Company</th>
+                                <th>Packet Size</th>
+                                <th>Purchased</th>
+                                <th>Total Sold</th>
+                                <th>Stock In Hand</th>
+                                <th>In Boxes</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="stockTableBody">
+                        <tbody id="productTableBody">
                             <!-- Populated by JavaScript -->
                         </tbody>
                     </table>
@@ -58,60 +56,44 @@
         </main>
     </div>
 
-    <!-- Add/Edit Stock Modal -->
-    <div id="stockModal" class="modal">
+    <!-- Add/Edit Product Modal -->
+    <div id="productModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2 id="modalTitle">Add Stock Item</h2>
-            <form id="stockForm">
+            <h2 id="productModalTitle">Add Product</h2>
+            <form id="productForm">
                 <div class="form-group">
-                    <label for="itemName">Item Name *</label>
-                    <input type="text" id="itemName" name="itemName" required>
+                    <label for="companyId">Company *</label>
+                    <select id="companyId" name="companyId" required>
+                        <option value="">-- Select Company --</option>
+                    </select>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="sku">SKU</label>
-                        <input type="text" id="sku" name="sku">
-                    </div>
-                    <div class="form-group">
-                        <label for="quantity">Quantity *</label>
-                        <input type="number" id="quantity" name="quantity" min="0" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="price">Unit Price *</label>
-                        <input type="number" id="price" name="price" step="0.01" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="categoryId">Category *</label>
-                        <select id="categoryId" name="categoryId" required>
-                            <option value="">-- Select Category --</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="supplier">Supplier</label>
-                        <input type="text" id="supplier" name="supplier">
-                    </div>
-                    <div class="form-group">
-                        <label for="reorderLevel">Reorder Level</label>
-                        <input type="number" id="reorderLevel" name="reorderLevel" min="0" value="5">
-                    </div>
+                <div class="form-group">
+                    <label for="productCode">Product Code</label>
+                    <input type="text" id="productCode" name="productCode"
+                           placeholder="Auto-generated from company" readonly>
                 </div>
 
                 <div class="form-group">
                     <label for="description">Description</label>
-                    <textarea id="description" name="description" rows="3"></textarea>
+                    <input type="text" id="description" name="description" placeholder="e.g. toys">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="packetSize">Packet Size *</label>
+                        <input type="number" id="packetSize" name="packetSize" min="1" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stockPurchase">Stock Purchased *</label>
+                        <input type="number" id="stockPurchase" name="stockPurchase" min="0" value="0" required>
+                    </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Save Item</button>
-                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Product</button>
+                    <button type="button" class="btn btn-secondary" id="productCancelBtn">Cancel</button>
                 </div>
             </form>
         </div>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales - Stock Management</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📦 Stock Manager</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-link">Products</a>
+                <a href="/companies" class="nav-link">Companies</a>
+                <a href="/sales" class="nav-link active">Sales</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <h1>Sales</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="addSaleBtn">+ Record Sale</button>
+                </div>
+            </header>
+
+            <section class="content-section">
+                <h2>All Sales</h2>
+                <div class="filter-bar">
+                    <div class="form-group">
+                        <label for="filterCompany">Filter by Company</label>
+                        <select id="filterCompany">
+                            <option value="">All Companies</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="filterProduct">Filter by Product</label>
+                        <select id="filterProduct">
+                            <option value="">All Products</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="stock-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Product Code</th>
+                                <th>Description</th>
+                                <th>Sold To</th>
+                                <th>Sale Date</th>
+                                <th>Quantity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="saleTableBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add/Edit Sale Modal -->
+    <div id="saleModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="saleModalTitle">Record Sale</h2>
+            <form id="saleForm">
+                <div class="form-group">
+                    <label for="saleCompany">Company (optional &mdash; filters products)</label>
+                    <select id="saleCompany">
+                        <option value="">All Companies</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="productId">Product *</label>
+                    <select id="productId" name="productId" required>
+                        <option value="">-- Select Product --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="saleTo">Sold To</label>
+                    <input type="text" id="saleTo" name="saleTo" placeholder="Customer (optional)">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="saleDate">Sale Date *</label>
+                        <input type="date" id="saleDate" name="saleDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="saleQty">Quantity *</label>
+                        <input type="number" id="saleQty" name="saleQty" min="1" required>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Sale</button>
+                    <button type="button" class="btn btn-secondary" id="saleCancelBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/sales.js"></script>
+</body>
+</html>

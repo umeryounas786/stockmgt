@@ -3,7 +3,7 @@ DROP DATABASE IF EXISTS stock_mgt;
 CREATE DATABASE stock_mgt;
 USE stock_mgt;
 
--- Users table
+-- Users table (authentication)
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -13,69 +13,86 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Categories table
-CREATE TABLE categories (
-    category_id INT PRIMARY KEY AUTO_INCREMENT,
-    category_name VARCHAR(100) NOT NULL UNIQUE,
-    description VARCHAR(255),
+-- Company table
+-- company_id is the incremental primary key; company_code is a short prefix
+-- (e.g. 'sam') used to build product codes; company_name is the full name.
+CREATE TABLE company (
+    company_id INT PRIMARY KEY AUTO_INCREMENT,
+    company_code VARCHAR(20) NOT NULL UNIQUE,
+    company_name VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Insert default categories
-INSERT INTO categories (category_name, description) VALUES
-('Electronics', 'Electronic devices and components'),
-('Accessories', 'Computer and device accessories'),
-('Software', 'Software licenses and programs'),
-('Hardware', 'Computer hardware components'),
-('Other', 'Miscellaneous items');
-
--- Stock Items table
-CREATE TABLE stock_items (
-    item_id INT PRIMARY KEY AUTO_INCREMENT,
-    item_name VARCHAR(100) NOT NULL,
-    quantity INT NOT NULL DEFAULT 0,
-    price DECIMAL(10, 2) NOT NULL,
-    category_id INT,
-    description VARCHAR(255),
-    sku VARCHAR(50) UNIQUE,
-    supplier VARCHAR(100),
-    reorder_level INT DEFAULT 5,
+-- Stock table (products)
+-- Each product belongs to a company and has a unique product_code
+-- (e.g. 'sam1', 'sam4'). product_stock_purchase is the total units purchased;
+-- product_packet_size is how many units make one box/packet.
+CREATE TABLE products (
+    product_id INT PRIMARY KEY AUTO_INCREMENT,
+    company_id INT NOT NULL,
+    product_code VARCHAR(50) NOT NULL UNIQUE,
+    product_description VARCHAR(255),
+    product_packet_size INT NOT NULL DEFAULT 1,
+    product_stock_purchase INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL
+    FOREIGN KEY (company_id) REFERENCES company(company_id) ON DELETE CASCADE
 );
 
--- Stock Transactions table (for tracking additions/removals)
-CREATE TABLE stock_transactions (
-    transaction_id INT PRIMARY KEY AUTO_INCREMENT,
-    item_id INT NOT NULL,
-    transaction_type VARCHAR(20) NOT NULL,
-    quantity INT NOT NULL,
-    notes VARCHAR(255),
-    created_by INT,
+-- Sale table
+-- Each row is one sale event against a product. product_sale_to (customer)
+-- is optional. Stock-in-hand is derived: purchase minus the sum of sale qty.
+CREATE TABLE sales (
+    sale_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    product_code VARCHAR(50) NOT NULL,
+    product_sale_to VARCHAR(100),
+    product_sale_date DATE NOT NULL,
+    product_sale_qty INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (item_id) REFERENCES stock_items(item_id) ON DELETE CASCADE,
-    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
--- Email Alerts log table
-CREATE TABLE email_alerts (
-    alert_id INT PRIMARY KEY AUTO_INCREMENT,
-    item_id INT NOT NULL,
-    alert_type VARCHAR(50),
-    recipient_email VARCHAR(100),
-    subject VARCHAR(255),
-    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(20),
-    FOREIGN KEY (item_id) REFERENCES stock_items(item_id) ON DELETE CASCADE
-);
+-- Convenience view: stock in hand per product
+-- total_sale       = SUM of all sale quantities
+-- stock_in_hand    = product_stock_purchase - total_sale
+-- stock_in_boxes   = stock_in_hand / product_packet_size (rounded to 2 decimals,
+--                    so a partial box shows e.g. 44.8 rather than being floored)
+CREATE VIEW product_stock_summary AS
+SELECT
+    p.product_id,
+    p.product_code,
+    p.product_description,
+    p.company_id,
+    c.company_code,
+    c.company_name,
+    p.product_packet_size,
+    p.product_stock_purchase,
+    COALESCE(SUM(s.product_sale_qty), 0) AS total_sale,
+    p.product_stock_purchase - COALESCE(SUM(s.product_sale_qty), 0) AS stock_in_hand,
+    ROUND((p.product_stock_purchase - COALESCE(SUM(s.product_sale_qty), 0)) / p.product_packet_size, 2) AS stock_in_boxes
+FROM products p
+JOIN company c ON c.company_id = p.company_id
+LEFT JOIN sales s ON s.product_id = p.product_id
+GROUP BY p.product_id, p.product_code, p.product_description, p.company_id,
+         c.company_code, c.company_name, p.product_packet_size, p.product_stock_purchase;
 
--- Create indexes for better query performance
-CREATE INDEX idx_stock_quantity ON stock_items(quantity);
-CREATE INDEX idx_stock_category ON stock_items(category_id);
-CREATE INDEX idx_transactions_item ON stock_transactions(item_id);
-CREATE INDEX idx_transactions_date ON stock_transactions(created_at);
+-- Sample data matching the worked example
+INSERT INTO company (company_code, company_name) VALUES
+('sam', 'samtajir');
+
+INSERT INTO products (company_id, product_code, product_description, product_packet_size, product_stock_purchase) VALUES
+(1, 'sam4', 'toys', 200, 22800);
+
+INSERT INTO sales (product_id, product_code, product_sale_to, product_sale_date, product_sale_qty) VALUES
+(1, 'sam4', NULL, '2026-05-04', 450),
+(1, 'sam4', NULL, '2026-05-06', 550);
+
+-- Indexes for query performance
+CREATE INDEX idx_products_company ON products(company_id);
+CREATE INDEX idx_sales_product ON sales(product_id);
+CREATE INDEX idx_sales_date ON sales(product_sale_date);
 CREATE INDEX idx_username ON users(username);
 
 SELECT 'Database initialized successfully!' AS status;
